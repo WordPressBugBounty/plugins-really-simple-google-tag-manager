@@ -11,7 +11,7 @@ class Simple_Googletag_Admin_Setting{
 	function __construct(){
 		add_action( 'admin_menu', array( $this, 'admin_menu' ) );
 		add_action( 'admin_init', array( $this, 'admin_init' ) );
-		$this->plugin_recommendations();
+		add_action('init', array( $this, 'plugin_recommendations' ) );
 	}
 
 	function admin_menu() {

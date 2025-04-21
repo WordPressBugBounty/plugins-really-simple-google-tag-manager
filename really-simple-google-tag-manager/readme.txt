@@ -1,9 +1,9 @@
-=== Really Simple Google Tag Manager ===
+=== Really Simple Google Tag Manager (GTM) ===
 Contributors: htplugins, hasthemes, aslamhasib, zenaulislam, tarekht
 Tags: google, googletag, tagmanager, really simple google tag manager, google tag manager
 Requires at least: 5.0
-Tested up to: 6.6
-Stable tag: 1.0.8
+Tested up to: 6.8
+Stable tag: 1.0.9
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -55,6 +55,10 @@ Needs assistance to use this plugin?
 Feel free to [Contact us](https://hasthemes.com/contact-us/)
 
 == Changelog ==
+
+= Version: 1.0.9 - Date: 2025-04-21 =
+* Compatibility with the latest WordPress version.
+
 = Version: 1.0.8 - Date: 2023-12-28 =
 * Updated: Language translation .pot file
 * Tweak: Opt-in message to provide non-sensitive diagnostic data and usage information to improve the plugin
