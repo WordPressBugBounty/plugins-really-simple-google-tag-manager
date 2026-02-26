@@ -3,7 +3,7 @@ Contributors: htplugins, hasthemes, aslamhasib, zenaulislam, tarekht
 Tags: google, googletag, tagmanager, really simple google tag manager, google tag manager
 Requires at least: 5.0
 Tested up to: 6.9
-Stable tag: 1.0.9
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -55,6 +55,9 @@ Needs assistance to use this plugin?
 Feel free to [Contact us](https://hasthemes.com/contact-us/)
 
 == Changelog ==
+
+= Version: 1.1.0 - Date: 2026-02-26 =
+* Improved: Admin notice display.
 
 = Version: 1.0.9 - Date: 2025-04-21 =
 * Compatibility with the latest WordPress version.

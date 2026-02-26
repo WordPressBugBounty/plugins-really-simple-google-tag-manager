@@ -82,13 +82,17 @@ if ( ! class_exists( 'Simple_Google_Tag_Diagnostic_Data' ) ) {
             $this->project_name = 'Really Simple Google Tag Manager';
             $this->project_type = 'wordpress-plugin';
             $this->project_version = SIMPLE_GOOGLE_TAG_VERSION;
-            $this->data_center = 'https://connect.pabbly.com/workflow/sendwebhookdata/IjU3NjAwNTY1MDYzZTA0MzM1MjY1NTUzNyI_3D_pc';
+            $this->data_center = 'https://n8n.aslamhasib.com/webhook/484fe1ab-9cdf-4318-8b6f-2b218ac47009';
             $this->privacy_policy = 'https://hasthemes.com/privacy-policy/';
 
             $this->project_pro_slug = 'really-simple-google-tag-manager-pro/really-simple-google-tag-manager-pro.php';
             $this->project_pro_active = $this->is_pro_plugin_active();
             $this->project_pro_installed = $this->is_pro_plugin_installed();
             $this->project_pro_version = $this->get_pro_version();
+
+            if ( get_option( 'simple_googletag_diagnostic_data_agreed' ) === 'yes' || get_option( 'simple_googletag_diagnostic_data_notice' ) === 'no' ) {
+                return;
+            }
 
             add_action( 'admin_notices', function () {
                 $this->show_notices();
@@ -469,7 +473,93 @@ if ( ! class_exists( 'Simple_Google_Tag_Diagnostic_Data' ) ) {
         /**
          * Show notices.
          */
+        /**
+         * Check if this plugin should show the diagnostic data notice.
+         * Returns false if already agreed, dismissed, or another HT plugin takes priority.
+         */
+        public function should_show_notice() {
+            if ( get_option( 'simple_googletag_diagnostic_data_agreed' ) === 'yes' || get_option( 'simple_googletag_diagnostic_data_notice' ) === 'no' ) {
+                return false;
+            }
+
+            $sibling_plugins = array(
+                'woolentor-addons/woolentor_addons_elementor.php' => array(
+                    'agreed'  => 'woolentor_diagnostic_data_agreed',
+                    'notice'  => 'woolentor_diagnostic_data_notice',
+                ),
+                'ht-mega-for-elementor/htmega_addons_elementor.php' => array(
+                    'agreed'  => 'htmega_diagnostic_data_agreed',
+                    'notice'  => 'htmega_diagnostic_data_notice',
+                ),
+                'ht-easy-google-analytics/ht-easy-google-analytics.php' => array(
+                    'agreed'  => 'htga4_diagnostic_data_agreed',
+                    'notice'  => 'htga4_diagnostic_data_notice',
+                ),
+                'ht-contactform/contact-form-widget-elementor.php' => array(
+                    'agreed'  => 'ht_contactform_diagnostic_data_agreed',
+                    'notice'  => 'ht_contactform_diagnostic_data_notice',
+                ),
+                'hashbar-wp-notification-bar/init.php' => array(
+                    'agreed'  => 'hashbar_diagnostic_data_agreed',
+                    'notice'  => 'hashbar_diagnostic_data_notice',
+                ),
+                'support-genix-lite/support-genix-lite.php' => array(
+                    'agreed'  => 'support_genix_lite_diagnostic_data_agreed',
+                    'notice'  => 'support_genix_lite_diagnostic_data_notice',
+                ),
+                'pixelavo/pixelavo.php' => array(
+                    'agreed'  => 'pixelavo_diagnostic_data_agreed',
+                    'notice'  => 'pixelavo_diagnostic_data_notice',
+                ),
+                'swatchly/swatchly.php' => array(
+                    'agreed'  => 'swatchly_diagnostic_data_agreed',
+                    'notice'  => 'swatchly_diagnostic_data_notice',
+                ),
+                'extensions-for-cf7/extensions-for-cf7.php' => array(
+                    'agreed'  => 'ht_cf7extensions_diagnostic_data_agreed',
+                    'notice'  => 'ht_cf7extensions_diagnostic_data_notice',
+                ),
+                'whols/whols.php' => array(
+                    'agreed'  => 'whols_diagnostic_data_agreed',
+                    'notice'  => 'whols_diagnostic_data_notice',
+                ),
+                'wp-plugin-manager/plugin-main.php' => array(
+                    'agreed'  => 'htpm_diagnostic_data_agreed',
+                    'notice'  => 'htpm_diagnostic_data_notice',
+                ),
+                'just-tables/just-tables.php' => array(
+                    'agreed'  => 'justtables_diagnostic_data_agreed',
+                    'notice'  => 'justtables_diagnostic_data_notice',
+                ),
+                'insert-headers-and-footers-script/init.php' => array(
+                    'agreed'  => 'ihafs_diagnostic_data_agreed',
+                    'notice'  => 'ihafs_diagnostic_data_notice',
+                ),
+            );
+
+            foreach ( $sibling_plugins as $plugin_slug => $options ) {
+                if ( get_option( $options['agreed'] ) === 'yes' ) {
+                    update_option( 'simple_googletag_diagnostic_data_agreed', 'yes' );
+                    update_option( 'simple_googletag_diagnostic_data_notice', 'no' );
+                    return false;
+                }
+            }
+
+            // Ensure only one HT plugin shows the diagnostic notice per request.
+            global $ht_diagnostic_notice_owner;
+            if ( isset( $ht_diagnostic_notice_owner ) && $ht_diagnostic_notice_owner !== 'simple_googletag' ) {
+                return false;
+            }
+            $ht_diagnostic_notice_owner = 'simple_googletag';
+
+            return true;
+        }
+
         private function show_notices() {
+            if ( ! $this->should_show_notice() ) {
+                return;
+            }
+
             $action = isset($_GET['action'] ) ? sanitize_text_field($_GET['action'] ) : '';
 
             if ( 'no' === $this->is_capable_user() || 'upload-plugin' == $action ) {
@@ -486,20 +576,17 @@ if ( ! class_exists( 'Simple_Google_Tag_Diagnostic_Data' ) ) {
          */
         private function show_core_notice() {
 
-            $message_l1 = sprintf( esc_html__( 'At %2$s%1$s%3$s, we prioritize continuous improvement and compatibility. To achieve this, we gather non-sensitive diagnostic information and details about plugin usage. This includes your site\'s URL, the versions of WordPress and PHP you\'re using, and a list of your installed plugins and themes. We also require your email address to provide you with exclusive discount coupons and updates. This data collection is crucial for ensuring that %2$s%1$s%3$s remains up-to-date and compatible with the most widely-used plugins and themes. Rest assured, your privacy is our priority – no spam, guaranteed. %4$sPrivacy Policy%5$s', 'simple-googletag' ), esc_html( $this->project_name ), '<strong>', '</strong>', '<a target="_blank" href="' . esc_url( $this->privacy_policy ) . '">', '</a>', '<h4 class="simple_googletag-diagnostic-data-title">', '</h4>' );
-
-            $message_l2 = sprintf( esc_html__( 'Server information (Web server, PHP version, MySQL version), WordPress information, site name, site URL, number of plugins, number of users, your name, and email address. You can rest assured that no sensitive data will be collected or tracked. %1$sLearn more%2$s.', 'simple-googletag' ), '<a target="_blank" href="' . esc_url( $this->privacy_policy ) . '">', '</a>' );
+            $message_l2 = sprintf( esc_html__( 'Server information (Web server, PHP version, MySQL version), WordPress information, site name, site URL, number of plugins, number of users, your name, and email address. You can rest assured that no sensitive data will be collected or tracked. %1$sPrivacy Policy%2$s', 'simple-googletag' ), '<a target="_blank" href="' . esc_url( $this->privacy_policy ) . '">', '</a>' );
 
             $button_text_1 = esc_html__( 'Count Me In', 'simple-googletag' );
             $button_link_1 = add_query_arg( array( 'simple_googletag-diagnostic-data-agreed' => 1 ) );
 
-            $button_text_2 = esc_html__( 'No, Thanks', 'simple-googletag' );
+            $button_text_2 = esc_html__( 'No thanks', 'simple-googletag' );
             $button_link_2 = add_query_arg( array( 'simple_googletag-diagnostic-data-agreed' => 0 ) );
             ?>
-            <div class="simple_googletag-diagnostic-data-style"><style>.simple_googletag-diagnostic-data-notice,.woocommerce-embed-page .simple_googletag-diagnostic-data-notice{padding-top:.75em;padding-bottom:.75em;}.simple_googletag-diagnostic-data-notice .simple_googletag-diagnostic-data-buttons,.simple_googletag-diagnostic-data-notice .simple_googletag-diagnostic-data-list,.simple_googletag-diagnostic-data-notice .simple_googletag-diagnostic-data-message{padding:.25em 2px;margin:0;}.simple_googletag-diagnostic-data-notice .simple_googletag-diagnostic-data-list{display:none;color:#646970;}.simple_googletag-diagnostic-data-notice .simple_googletag-diagnostic-data-buttons{padding-top:.75em;}.simple_googletag-diagnostic-data-notice .simple_googletag-diagnostic-data-buttons .button{margin-right:5px;box-shadow:none;}.simple_googletag-diagnostic-data-loading{position:relative;}.simple_googletag-diagnostic-data-loading::before{position:absolute;content:"";width:100%;height:100%;top:0;left:0;background-color:rgba(255,255,255,.5);z-index:999;}.simple_googletag-diagnostic-data-disagree{border-width:0px !important;background-color: transparent!important; padding: 0!important;}h4.simple_googletag-diagnostic-data-title {margin: 0 0 10px 0;font-size: 1.04em;font-weight: 600;}</style></div>
-            <div class="simple_googletag-diagnostic-data-notice notice notice-success">
-                <h4 class="simple_googletag-diagnostic-data-title"><?php echo sprintf( esc_html__('🌟 Enhance Your %1$s Experience as a Valued Contributor!','simple-googletag'), esc_html( $this->project_name )); ?></h4>
-                <p class="simple_googletag-diagnostic-data-message"><?php echo wp_kses_post( $message_l1 ); ?></p>
+            <div class="simple_googletag-diagnostic-data-style"><style>.simple_googletag-diagnostic-data-notice,.woocommerce-embed-page .simple_googletag-diagnostic-data-notice{padding-top:.75em;padding-bottom:.75em;}.simple_googletag-diagnostic-data-notice .simple_googletag-diagnostic-data-buttons,.simple_googletag-diagnostic-data-notice .simple_googletag-diagnostic-data-list,.simple_googletag-diagnostic-data-notice .simple_googletag-diagnostic-data-message{padding:.25em 2px;margin:0;}.simple_googletag-diagnostic-data-notice .simple_googletag-diagnostic-data-list{display:none;color:#646970;}.simple_googletag-diagnostic-data-notice .simple_googletag-diagnostic-data-buttons{padding-top:.75em;}.simple_googletag-diagnostic-data-notice .simple_googletag-diagnostic-data-buttons .button{margin-right:5px;box-shadow:none;}.simple_googletag-diagnostic-data-loading{position:relative;}.simple_googletag-diagnostic-data-loading::before{position:absolute;content:"";width:100%;height:100%;top:0;left:0;background-color:rgba(255,255,255,.5);z-index:999;}.simple_googletag-diagnostic-data-disagree{border-width:0px !important;background-color: transparent!important; padding: 0!important;}.simple_googletag-diagnostic-data-list-toogle{cursor:pointer;color:#2271b1;text-decoration:none;}</style></div>
+            <div class="simple_googletag-diagnostic-data-notice notice notice-info">
+                <p class="simple_googletag-diagnostic-data-message"><?php echo wp_kses_post( sprintf( esc_html__( 'Want to help make %2$s%1$s%3$s even more awesome? Allow %1$s to collect diagnostic data and usage information. (%4$swhat we collect%5$s)', 'simple-googletag' ), esc_html( $this->project_name ), '<strong>', '</strong>', '<a href="#" class="simple_googletag-diagnostic-data-list-toogle">', '</a>' ) ); ?></p>
                 <p class="simple_googletag-diagnostic-data-list"><?php echo wp_kses_post( $message_l2 ); ?></p>
                 <p class="simple_googletag-diagnostic-data-buttons">
                     <a href="<?php echo esc_url( $button_link_1 ); ?>" class="simple_googletag-diagnostic-data-button simple_googletag-diagnostic-data-agree button button-primary"><?php echo esc_html( $button_text_1 ); ?></a>
