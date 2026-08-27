@@ -4,7 +4,7 @@
  * Description: Add Google Tag Manager onto every page of your website without editing code.
  * Author: 		HasThemes
  * Author URI: 	https://hasthemes.com/
- * Version: 	1.1.0
+ * Version: 	1.1.1
  * Text Domain: simple-googletag
  * Domain Path: /languages
 */
@@ -14,7 +14,7 @@ define( 'SIMPLE_GOOGLE_TAG_ROOT', __FILE__ );
 define( 'SIMPLE_GOOGLE_TAG_URL', plugins_url( '/', SIMPLE_GOOGLE_TAG_ROOT ) );
 define( 'SIMPLE_GOOGLE_TAG_PATH', plugin_dir_path( SIMPLE_GOOGLE_TAG_ROOT ) );
 define( 'SIMPLE_GOOGLE_TAG_PLUGIN_BASE', plugin_basename( SIMPLE_GOOGLE_TAG_ROOT ) );
-define( 'SIMPLE_GOOGLE_TAG_VERSION', '1.1.0' );
+define( 'SIMPLE_GOOGLE_TAG_VERSION', '1.1.1' );
 
 function simple_googletag_get_id(){
 	$simple_googletag_id = get_option('google_tag_manager_id')?get_option('google_tag_manager_id'):'';
@@ -26,4 +26,6 @@ require_once ( SIMPLE_GOOGLE_TAG_PATH .'includes/class.simple-googletag.php' );
 
 if( is_admin() ){
 	require_once ( SIMPLE_GOOGLE_TAG_PATH .'admin/class-diagnostic-data.php' );
+	require_once ( SIMPLE_GOOGLE_TAG_PATH .'admin/class-dashboard-widget-api.php' );
+	require_once ( SIMPLE_GOOGLE_TAG_PATH .'admin/class-dashboard-widget.php' );
 }
